@@ -1,0 +1,22 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+ <title>Enterprise Bug Tracker</title>
+</head>
+<body>
+ <h2>Bug Tracker Dashboard</h2>
+ <form method="post" action="/add">
+  <input name="title" placeholder="Bug Title"/>
+  <input name="assignedTo" placeholder="Assign To"/>
+  <button>Add Bug</button>
+ </form>
+ <ul>
+  <li th:each="b : ${bugs}">
+   <span th:text="${b.title}"></span> -
+   <span th:text="${b.status}"></span> -
+   <span th:text="${b.assignedTo}"></span>
+  </li>
+ </ul>
+</body>
+</html>

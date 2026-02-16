@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Enterprise Bug Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f6fa;
+            color: #333;
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .navbar h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .nav-right a, .nav-right span {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .nav-right a:hover {
+            opacity: 0.8;
+        }
+        
+        .nav-right form {
+            display: inline;
+        }
+        
+        .nav-right button {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .nav-right button:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            border-left: 4px solid #667eea;
+        }
+        
+        .stat-card h3 {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        
+        .stat-card .number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-card.critical {
+            border-left-color: #e74c3c;
+        }
+        
+        .stat-card.critical .number {
+            color: #e74c3c;
+        }
+        
+        .stat-card.high {
+            border-left-color: #f39c12;
+        }
+        
+        .stat-card.high .number {
+            color: #f39c12;
+        }
+        
+        .section {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #ecf0f1;
+            color: #333;
+        }
+        
+        .btn-secondary:hover {
+            background: #bdc3c7;
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .table thead {
+            background: #f8f9fa;
+        }
+        
+        .table th,
+        .table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .table th {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .table tbody tr:hover {
+            background: #f5f6fa;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .badge-open {
+            background: #e8f8f5;
+            color: #27ae60;
+        }
+        
+        .badge-in-progress {
+            background: #fef5e7;
+            color: #f39c12;
+        }
+        
+        .badge-resolved {
+            background: #eaf2f8;
+            color: #3498db;
+        }
+        
+        .badge-closed {
+            background: #fadbd8;
+            color: #e74c3c;
+        }
+        
+        .badge-critical {
+            background: #fadbd8;
+            color: #e74c3c;
+        }
+        
+        .badge-high {
+            background: #fef5e7;
+            color: #f39c12;
+        }
+        
+        .badge-medium {
+            background: #eaf2f8;
+            color: #3498db;
+        }
+        
+        .badge-low {
+            background: #e8f8f5;
+            color: #27ae60;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .action-buttons a,
+        .action-buttons button {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>🐛 Enterprise Bug Tracker</h1>
+        <div class="nav-right">
+            <span th:text="'Welcome, ' + ${currentUser}"></span>
+            <sec:authorize access="hasRole('ADMIN')">
+                <a href="/admin">Admin Panel</a>
+            </sec:authorize>
+            <sec:authorize access="hasAnyRole('ADMIN','MANAGER')">
+                <a href="/admin/reports">Reports</a>
+            </sec:authorize>
+            <form th:action="@{/logout}" method="post">
+                <button type="submit">Logout</button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="container">
+        <!-- Statistics Section -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Total Bugs</h3>
+                <div class="number" th:text="${stats.TOTAL}">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Open</h3>
+                <div class="number" th:text="${stats.OPEN}">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>In Progress</h3>
+                <div class="number" th:text="${stats.IN_PROGRESS}">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Resolved</h3>
+                <div class="number" th:text="${stats.RESOLVED}">0</div>
+            </div>
+            <div class="stat-card critical">
+                <h3>Critical Issues</h3>
+                <div class="number" th:text="${stats.CRITICAL}">0</div>
+            </div>
+            <div class="stat-card high">
+                <h3>High Priority</h3>
+                <div class="number" th:text="${stats.HIGH}">0</div>
+            </div>
+        </div>
+        
+        <!-- Create Bug Section -->
+        <div class="section">
+            <h2>📝 Report New Bug</h2>
+            <form th:action="@{/add}" method="post">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="title">Bug Title *</label>
+                        <input type="text" id="title" name="title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="priority">Priority *</label>
+                        <select id="priority" name="priority" required>
+                            <option value="LOW">Low</option>
+                            <option value="MEDIUM" selected>Medium</option>
+                            <option value="HIGH">High</option>
+                            <option value="CRITICAL">Critical</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="description">Description *</label>
+                    <textarea id="description" name="description" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="assignedTo">Assign To *</label>
+                    <input type="text" id="assignedTo" name="assignedTo" placeholder="Developer name" required>
+                </div>
+                <button type="submit" class="btn btn-primary">🚀 Create Bug Report</button>
+            </form>
+        </div>
+        
+        <!-- Bugs List Section -->
+        <div class="section">
+            <h2>📋 Bug List</h2>
+            <table class="table" th:if="${bugs.size() > 0}">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Title</th>
+                        <th>Status</th>
+                        <th>Priority</th>
+                        <th>Assigned To</th>
+                        <th>Created By</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="bug : ${bugs}">
+                        <td th:text="${bug.id}">1</td>
+                        <td th:text="${bug.title}">Bug title</td>
+                        <td>
+                            <span class="badge" th:classappend="'badge-' + ${bug.status.toString().toLowerCase()}"
+                                  th:text="${bug.status}">OPEN</span>
+                        </td>
+                        <td>
+                            <span class="badge" th:classappend="'badge-' + ${bug.priority.toString().toLowerCase()}"
+                                  th:text="${bug.priority}">MEDIUM</span>
+                        </td>
+                        <td th:text="${bug.assignedTo}">Developer</td>
+                        <td th:text="${bug.createdBy}">Creator</td>
+                        <td>
+                            <div class="action-buttons">
+                                <a th:href="@{/bug/{id}(id=${bug.id})}" class="btn btn-secondary">View</a>
+                                <sec:authorize access="hasAnyRole('ADMIN','MANAGER','DEVELOPER')">
+                                    <a th:href="@{/bug/{id}(id=${bug.id})}" class="btn btn-secondary">Edit</a>
+                                </sec:authorize>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <p th:if="${bugs.size() == 0}" style="text-align: center; color: #999; padding: 20px;">
+                No bugs reported yet. Great job! 🎉
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        // View and Edit buttons now link to bug detail page
+    </script>
+</body>
+</html>
